@@ -9,20 +9,42 @@
 import UIKit
 
 class PasteImageView : UIImageView {
+    let tipLayer : CATextLayer
+    let customBorderLayer : CAShapeLayer
+    
     override init(frame: CGRect) {
+        tipLayer = CATextLayer.init()
+        customBorderLayer = CAShapeLayer.init()
         super.init(frame: frame)
-        backgroundColor = UIColor.blue
+        
+        backgroundColor = UIColor.lightGray
+        customBorderLayer.strokeColor = UIColor.darkGray.cgColor
+        customBorderLayer.fillColor = nil;
+        customBorderLayer.path = UIBezierPath.init(rect: bounds).cgPath
+        customBorderLayer.frame = self.bounds;
+        customBorderLayer.lineWidth = 3;
+        customBorderLayer.lineCap = "round";
+        customBorderLayer.lineDashPattern = [10, 10];
+        layer.addSublayer(customBorderLayer)
+        
+        tipLayer.string = "Drag image to here"
+        tipLayer.frame = bounds
+        tipLayer.font = UIFont.systemFont(ofSize: 14)
+        layer.addSublayer(tipLayer)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
     override func paste(itemProviders: [NSItemProvider]) {
         for dragItem in itemProviders {
             if dragItem.canLoadObject(ofClass: UIImage.self) {
                 dragItem.loadObject(ofClass: UIImage.self, completionHandler: { (image, error) in
                     if image != nil {
                         DispatchQueue.main.async {
+                            self.tipLayer.removeFromSuperlayer()
+                            self.customBorderLayer.removeFromSuperlayer()
                             self.image = (image as! UIImage)
                         }
                     }
@@ -32,6 +54,9 @@ class PasteImageView : UIImageView {
     }
 }
 
+let kImageSizeWidth = 300
+let kImageSizeHeight = 200
+
 class DragToPasteViewController: UIViewController,UIDragInteractionDelegate,UIDropInteractionDelegate {
     var dragView : UIImageView!
     
@@ -39,7 +64,6 @@ class DragToPasteViewController: UIViewController,UIDragInteractionDelegate,UIDr
         super.viewDidLoad()
         view.backgroundColor = UIColor.white
         view.isUserInteractionEnabled = true
-        view.pasteConfiguration = UIPasteConfiguration(forAccepting: UIImage.self)
         setupUserInterface()
 
     }
@@ -47,20 +71,23 @@ class DragToPasteViewController: UIViewController,UIDragInteractionDelegate,UIDr
     // MARK: - UserInterface
     private func setupUserInterface() {
         let dragImage = UIImage.init(named: "madao")
-        dragView = UIImageView.init(frame: CGRect.init(x: 50, y: 50, width: 150, height: 150))
-        dragView.backgroundColor = UIColor.red
+        dragView = UIImageView.init(frame: CGRect.init(x: 50, y: 80, width: kImageSizeWidth, height: kImageSizeHeight))
         dragView.isUserInteractionEnabled = true
+        dragView.backgroundColor = UIColor.clear
         dragView.image = dragImage
+        dragView.clipsToBounds = true
         dragView.contentMode = .scaleAspectFill
         
         //Add an UIDragInteraction to support drag
         dragView.addInteraction(UIDragInteraction.init(delegate: self))
         view.addSubview(dragView)
         
-        let pasteImageView = PasteImageView.init(frame: CGRect.init(x: 200, y: 200, width: 150, height: 150))
-        //Config pasteConfiguration for accept a 
+        let pasteImageView = PasteImageView.init(frame: CGRect.init(x: Int(view.bounds.size.width - 350), y: 80, width: kImageSizeWidth, height: kImageSizeHeight))
+        //Config pasteConfiguration for accept a image
         pasteImageView.pasteConfiguration = UIPasteConfiguration(forAccepting: UIImage.self)
         pasteImageView.isUserInteractionEnabled = true
+        pasteImageView.clipsToBounds = true
+        pasteImageView.contentMode = .scaleAspectFill
         view.addSubview(pasteImageView)
     }
 
@@ -70,44 +97,10 @@ class DragToPasteViewController: UIViewController,UIDragInteractionDelegate,UIDr
     }
     
     // MARK: - UIDragInteractionDelegate
-    
     func dragInteraction(_ interaction: UIDragInteraction, itemsForBeginning session: UIDragSession) -> [UIDragItem] {
         let dragImage = dragView.image
         let itemProvider = NSItemProvider.init(object: dragImage!)
         let dragItem = UIDragItem.init(itemProvider: itemProvider)
         return [dragItem]
     }
-    
-    override func paste(itemProviders: [NSItemProvider]) {
-
-    }
-    
-//    func dragInteraction(_ interaction: UIDragInteraction, sessionWillBegin session: UIDragSession) {
-//
-//    }
-//
-//    func dropInteraction(_ interaction: UIDropInteraction,
-//                         sessionDidUpdate session: UIDropSession) -> UIDropProposal {
-//        return UIDropProposal(operation: UIDropOperation.copy)
-//
-//    }
-    
-    func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
-//        let point = session.location(in: view)
-//        for dragItem in session.items {
-//            let newImageView
-//        }
-    }
-//
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
