@@ -15,6 +15,7 @@
 		097D23E61F30707100DF7649 /* DragAndDropResearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097D23E51F30707100DF7649 /* DragAndDropResearchTests.swift */; };
 		097D23F11F30707100DF7649 /* DragAndDropResearchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097D23F01F30707100DF7649 /* DragAndDropResearchUITests.swift */; };
 		097D23FF1F30709800DF7649 /* DragToPasteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097D23FE1F30709800DF7649 /* DragToPasteViewController.swift */; };
+		09BAAADE1F31B54500151D61 /* DragToMoveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09BAAADD1F31B54500151D61 /* DragToMoveViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		097D23F01F30707100DF7649 /* DragAndDropResearchUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragAndDropResearchUITests.swift; sourceTree = "<group>"; };
 		097D23F21F30707100DF7649 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		097D23FE1F30709800DF7649 /* DragToPasteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragToPasteViewController.swift; sourceTree = "<group>"; };
+		09BAAADD1F31B54500151D61 /* DragToMoveViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragToMoveViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +104,7 @@
 				097D23D01F30707100DF7649 /* AppDelegate.swift */,
 				097D23D21F30707100DF7649 /* ViewController.swift */,
 				097D23FE1F30709800DF7649 /* DragToPasteViewController.swift */,
+				09BAAADD1F31B54500151D61 /* DragToMoveViewController.swift */,
 				097D23D41F30707100DF7649 /* Main.storyboard */,
 				097D23D71F30707100DF7649 /* Assets.xcassets */,
 				097D23D91F30707100DF7649 /* LaunchScreen.storyboard */,
@@ -259,6 +262,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09BAAADE1F31B54500151D61 /* DragToMoveViewController.swift in Sources */,
 				097D23D31F30707100DF7649 /* ViewController.swift in Sources */,
 				097D23D11F30707100DF7649 /* AppDelegate.swift in Sources */,
 				097D23FF1F30709800DF7649 /* DragToPasteViewController.swift in Sources */,

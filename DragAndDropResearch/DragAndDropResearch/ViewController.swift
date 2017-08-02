@@ -49,6 +49,8 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         switch indexPath.row {
         case 0:
           navigationController?.pushViewController(DragToPasteViewController.init(), animated: true)
+        case 1:
+          navigationController?.pushViewController(DragToMoveViewController.init(), animated: true)
         default:
             return
         }
