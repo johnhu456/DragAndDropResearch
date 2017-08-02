@@ -57,8 +57,12 @@ class PasteImageView : UIImageView {
 let kImageSizeWidth = 300
 let kImageSizeHeight = 200
 
+let kLabelSizeWidth = 150
+let kLabelSizeHeight = 50
+
 class DragToPasteViewController: UIViewController,UIDragInteractionDelegate,UIDropInteractionDelegate {
-    var dragView : UIImageView!
+    var dragImageView : UIImageView!
+    var dragTextLabel : UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,17 +74,19 @@ class DragToPasteViewController: UIViewController,UIDragInteractionDelegate,UIDr
     
     // MARK: - UserInterface
     private func setupUserInterface() {
+        
+        //Config for drag image
         let dragImage = UIImage.init(named: "madao")
-        dragView = UIImageView.init(frame: CGRect.init(x: 50, y: 80, width: kImageSizeWidth, height: kImageSizeHeight))
-        dragView.isUserInteractionEnabled = true
-        dragView.backgroundColor = UIColor.clear
-        dragView.image = dragImage
-        dragView.clipsToBounds = true
-        dragView.contentMode = .scaleAspectFill
+        dragImageView = UIImageView.init(frame: CGRect.init(x: 50, y: 80, width: kImageSizeWidth, height: kImageSizeHeight))
+        dragImageView.isUserInteractionEnabled = true
+        dragImageView.backgroundColor = UIColor.clear
+        dragImageView.image = dragImage
+        dragImageView.clipsToBounds = true
+        dragImageView.contentMode = .scaleAspectFill
         
         //Add an UIDragInteraction to support drag
-        dragView.addInteraction(UIDragInteraction.init(delegate: self))
-        view.addSubview(dragView)
+        dragImageView.addInteraction(UIDragInteraction.init(delegate: self))
+        view.addSubview(dragImageView)
         
         let pasteImageView = PasteImageView.init(frame: CGRect.init(x: Int(view.bounds.size.width - 350), y: 80, width: kImageSizeWidth, height: kImageSizeHeight))
         //Config pasteConfiguration for accept a image
@@ -89,6 +95,20 @@ class DragToPasteViewController: UIViewController,UIDragInteractionDelegate,UIDr
         pasteImageView.clipsToBounds = true
         pasteImageView.contentMode = .scaleAspectFill
         view.addSubview(pasteImageView)
+        
+        //Config for drag text
+        dragTextLabel = UILabel.init(frame: CGRect.init(x: 50, y: 300, width: kLabelSizeWidth, height: kLabelSizeHeight))
+        dragTextLabel.text = "Try drag me~"
+        dragTextLabel.backgroundColor = UIColor.clear
+        dragTextLabel.isUserInteractionEnabled = true
+        dragTextLabel.addInteraction(UIDragInteraction.init(delegate: self))
+        view.addSubview(dragTextLabel)
+        
+        let pasteTextField = UITextField.init(frame: CGRect.init(x: Int(pasteImageView.frame.origin.x), y: 300, width: kLabelSizeWidth, height: kLabelSizeHeight))
+        pasteTextField.placeholder = "Drag text here"
+        pasteTextField.borderStyle = .roundedRect
+        pasteTextField.pasteConfiguration = UIPasteConfiguration(forAccepting: NSString.self)
+        view.addSubview(pasteTextField)
     }
 
     override func didReceiveMemoryWarning() {
@@ -98,9 +118,20 @@ class DragToPasteViewController: UIViewController,UIDragInteractionDelegate,UIDr
     
     // MARK: - UIDragInteractionDelegate
     func dragInteraction(_ interaction: UIDragInteraction, itemsForBeginning session: UIDragSession) -> [UIDragItem] {
-        let dragImage = dragView.image
-        let itemProvider = NSItemProvider.init(object: dragImage!)
-        let dragItem = UIDragItem.init(itemProvider: itemProvider)
-        return [dragItem]
+        if interaction.view == dragImageView {
+            let dragImage = dragImageView.image
+            let itemProvider = NSItemProvider.init(object: dragImage!)
+            let dragItem = UIDragItem.init(itemProvider: itemProvider)
+            return [dragItem]
+        }
+        else if interaction.view == dragTextLabel {
+            let dragText = "Try drag me~"
+            let itemProvider = NSItemProvider.init(object: dragText as NSString)
+            let dragItem = UIDragItem.init(itemProvider: itemProvider)
+            return [dragItem]
+        }
+        else {
+           return []
+        }
     }
 }
