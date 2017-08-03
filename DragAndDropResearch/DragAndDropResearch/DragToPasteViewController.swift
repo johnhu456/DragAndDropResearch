@@ -60,7 +60,7 @@ let kImageSizeHeight = 200
 let kLabelSizeWidth = 150
 let kLabelSizeHeight = 50
 
-class DragToPasteViewController: UIViewController,UIDragInteractionDelegate,UIDropInteractionDelegate {
+class DragToPasteViewController: UIViewController,UIDragInteractionDelegate {
     var dragImageView : UIImageView!
     var dragTextLabel : UILabel!
     
