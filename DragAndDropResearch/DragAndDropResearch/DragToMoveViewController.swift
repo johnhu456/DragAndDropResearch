@@ -79,12 +79,18 @@ class DragToMoveViewController: UIViewController,UIDragInteractionDelegate,UIDro
                 self.selectedImageView.center = self.dropPoint!
             }
         } else {
-            createImageCopyAtPoint(point: dropPoint!)
+            createImageFromProviderAndPoint(provider: item.itemProvider, point: self.dropPoint!)
         }
     }
     
     func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
         //Must implement this method
+        if session.localDragSession == nil {
+            self.dropPoint = session.location(in: interaction.view!)
+                for dragItem in session.items {
+                    createImageFromProviderAndPoint(provider: dragItem.itemProvider, point: self.dropPoint!)
+                }
+            }
     }
     
     // MARK: - Helper
@@ -97,6 +103,26 @@ class DragToMoveViewController: UIViewController,UIDragInteractionDelegate,UIDro
         newImageView.addInteraction(UIDragInteraction.init(delegate: self))
         view.addSubview(newImageView)
     }
+
+    private func createImageFromProviderAndPoint(provider:NSItemProvider, point:CGPoint) {
+        let newImageView = UIImageView.init(frame: CGRect.init(x: 0, y: 0, width: kImageSizeWidth, height: kImageSizeHeight))
+        newImageView.center = point
+        newImageView.isUserInteractionEnabled = true
+        newImageView.backgroundColor = UIColor.clear
+        provider.loadObject(ofClass: UIImage.self, completionHandler: { (object, error) in
+            if object != nil {
+                DispatchQueue.main.async {
+                    newImageView.image = (object as! UIImage)
+                    newImageView.addInteraction(UIDragInteraction.init(delegate: self))
+                    self.view.addSubview(newImageView)
+                }
+            }
+            else {
+                // Handle the error
+            }
+        })
+    }
+
 
     /*
     // MARK: - Navigation
