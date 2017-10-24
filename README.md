@@ -109,3 +109,166 @@ Terminating app due to uncaught exception 'NSInternalInconsistencyException', re
 小提示：textField不用配置pasteConfiguration,自己对于NSString类型的数据有默认实现。
 
 demo地址：[https://github.com/madao1237/DragAndDropResearch](https://github.com/madao1237/DragAndDropResearch)
+
+
+
+
+
+# Drag and Drop for iOS11 (Drag to Move/Copy)
+
+在上一篇文章中我们已经实现了用UIDragInteraction 和UIView的新属性pasteConfiguration实现了简单的拖动粘贴操作。
+以下我们将继续深入一点研究Drag and Drop 并实现拖动换位置和拖动进行Copy功能，
+如图：
+![Drag to Move/Copy](http://upload-images.jianshu.io/upload_images/1683504-949c4164f493aad3.gif?imageMogr2/auto-orient/strip)
+
+与之前简单使用pasteConfiguration不同，此次我们要自己来同时实现几个UIDragInteractionDelegate和UIDropInteractionDelegate的关键方法。
+
+###Drag to move 
+####Step 0 TimeLine 
+![Drag and Drop Timeline](http://upload-images.jianshu.io/upload_images/1683504-1862b595f629704d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)  
+首选了解一下Drag and Drop 的生命周期，如上图。
+当你长按住一个视图的时候，视图升起时候Drag就开始了，然后随着手指的移动这一段都是Drag, 一旦松开手指，就由Drop来接管了，继续进行一些动画或者数据传输等操作，这应该比较好理解，所以先处理Drag啦。
+
+####Step1 给View添加Drag和Drop
+这部分关于UIDragInteraction&UIDropInteraction的上一篇文章[Drag and Drop for iOS11](http://www.jianshu.com/p/2caa9b861121)已经介绍过。
+我们创建一个ImageView来支持drag, 同时也要让当前的父view支持drop：
+```
+       //Config for drag image
+        let dragImage = UIImage.init(named: "madao")
+        dragImageView = UIImageView.init(frame: CGRect.init(x: 50, y: 80, width: kImageSizeWidth, height: kImageSizeHeight))
+        dragImageView.isUserInteractionEnabled = true
+        dragImageView.backgroundColor = UIColor.clear
+        dragImageView.image = dragImage
+        dragImageView.clipsToBounds = true
+        dragImageView.contentMode = .scaleAspectFill
+        
+        //Add an UIDragInteraction to support drag
+        dragImageView.addInteraction(UIDragInteraction.init(delegate: self))
+        view.addSubview(dragImageView)
+        
+        //Add UIDropInteraction to support drop
+        view.addInteraction(UIDropInteraction.init(delegate: self))
+```
+
+####Step2 实现DragInteractionDelegate
+最重要的，就像UITableView中的dataSource一样，我们提供可以拖动的数据源：
+```
+    func dragInteraction(_ interaction: UIDragInteraction, itemsForBeginning session: UIDragSession) -> [UIDragItem] {
+        let dragImage = dragImageView.image
+        //使用该图片作为拖动的数据源，由NSItemProvider负责包装
+        let itemProvider = NSItemProvider.init(object: dragImage!)
+        let dragItem = UIDragItem.init(itemProvider: itemProvider)
+        return [dragItem]
+    }
+```
+
+####Step3 实现DropInteractionDelegate
+首先类似itemsForBeginning方法在UIDragInteractionDelegate中的重要地位一样，要想一个view能够响应一个Drop,我们需要实现：
+```
+func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal
+```
+该代理方法当你手指在view上拖动的时候会响应，意义在于告诉view，drop是什么类型的。主要是以下这几种：
+![Drop proposal](http://upload-images.jianshu.io/upload_images/1683504-e94655f22e6cb06e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+*  **cancel**： 不响应Drop动作，应该可以理解成无视。
+*  **copy**：拷贝，右上角会显示+号，当然拷贝的操作是要我们自己配合delegate来完成
+*  **move**：虽然看上去和cancel一模一样，但是程序中还是会判定视图可以响应这个drop事件，同样，我们也要在delegate中完成相应代码来使他“看上去”像一个move的动作
+*  **forbidden**:表示该视图支持drop,但是当前暂时不支持响应（有任务block住了或者文件类型不支持之类的）
+
+总之我们需要在上面那个delegate中告诉这个view该如何响应drop,如下：
+```
+    func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
+         //原程序设计通过segmentControl来选择操作，所以这里通过判断来返回不同的UIDropProposal，如果单纯为了实现Move功能，也可以直接返回UIDropProposal.init(operation: UIDropOperation.move)
+        let operation = segmentControl.selectedSegmentIndex == 0 ? UIDropOperation.move : .copy
+        let proposal = UIDropProposal.init(operation: operation)
+        dropPoint = session.location(in: view)
+        return proposal
+    }
+```
+
+然后我们实现performDrop：
+```
+    func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
+        //我们这里可以获取到dropSession在视图中的位置，然后就可以将ImageView直接移动到那个点。
+        let dropPoint = session.location(in: interaction.view!)
+        self.selectedImageView.center = dropPoint
+    }
+```
+
+####Take a break
+以上步骤完成后，运行后应该可以看到我们已经简单实现了一个Drag to move的功能，虽然可能相比使用手势会稍显麻烦，但是苹果提供的动画让他显得更炫酷。
+
+####Step4 动画
+UIDragInteractionDelegate和UIDropInteractionDelegate也提供给我们了一些很好的方法让在Drag 和Drop的timeline中执行我们自己的动画，
+这里举一个例子：
+```
+    func dropInteraction(_ interaction: UIDropInteraction, item: UIDragItem, willAnimateDropWith animator: UIDragAnimating) {
+        if segmentControl.selectedSegmentIndex == 0 {
+            //Move，使用提供的参数animator去添加我们想要的动画
+            animator.addAnimations {
+                self.selectedImageView.center = self.dropPoint!
+            }
+            animator.addCompletion { _ in
+                self.selectedImageView.center = self.dropPoint!
+            }
+        }
+```
+还是蛮方便的，以上就是Drag to move 的实现。
+
+###Drag to copy
+其实和上文的Drag to move几乎一模一样，都是实现几个关键的delegate方法（可以复习一下哪几个delegate方法必须要实现）和锦上添花的动画方法。
+不一样的就是需要传输数据。
+可能有人会说 那我在performDrop的时候直接把imageView 复制到新位置不就好了么，虽然这样可以，但是也失去了Drag and Drop这个功能使用的意义。
+
+我觉得它的意义更在于底层看不见的数据随着手指的流动，因为Drag and drop 不止于在自己的App内进行传输。
+
+前文我们说到在Drag中需要用NSItemProvider来包装这个image，同样在Drop中我们也要使用NSItemProvider来解开这个数据并进行展示，直接贴代码：
+```
+    func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
+        self.dropPoint = session.location(in: interaction.view!)
+        //Must implement this method
+        if session.localDragSession == nil {
+            self.dropPoint = session.location(in: interaction.view!)
+                for dragItem in session.items { 
+                    //从传过来的dragItem中获取数据的NSItemProvider
+                    createImageFromProviderAndPoint(provider: dragItem.itemProvider, point: self.dropPoint!)
+                }
+        } else {
+            self.selectedImageView.center = self.dropPoint!
+        }
+    }
+    private func createImageFromProviderAndPoint(provider:NSItemProvider, point:CGPoint) {
+        //创建一个新的imageView
+        let newImageView = UIImageView.init(frame: CGRect.init(x: 0, y: 0, width: kImageSizeWidth, height: kImageSizeHeight))
+        newImageView.center = point
+        newImageView.isUserInteractionEnabled = true
+        newImageView.backgroundColor = UIColor.clear 
+        //使用NSItemProvider 直接加载UIImage
+        provider.loadObject(ofClass: UIImage.self, completionHandler: { (object, error) in
+            //成功后直接显示
+            if object != nil {
+                DispatchQueue.main.async {
+                    newImageView.image = (object as! UIImage)
+                    newImageView.addInteraction(UIDragInteraction.init(delegate: self))
+                    self.view.addSubview(newImageView)
+                }
+            }
+            else {
+                // Handle the error
+            }
+        })
+    }
+
+```
+当然前面的proposal也要返回copy，这样在拖动时，视图的右上角才会显示+号。
+当你完成以上代码之后，应该就可以Drag to copy了。
+
+**在iPad分屏模式下，来回拖动相册的照片到这个demo里面或者把demo的图片拖到系统相册也是可以的哦，这要归功于强大的delegates和NSItemProvider**
+
+**-----**
+demo地址：[https://github.com/madao1237/DragAndDropResearch](https://github.com/madao1237/DragAndDropResearch)
+
+
+
+
+
