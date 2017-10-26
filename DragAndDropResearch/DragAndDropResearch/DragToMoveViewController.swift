@@ -9,10 +9,10 @@
 import UIKit
 
 class DragToMoveViewController: UIViewController,UIDragInteractionDelegate,UIDropInteractionDelegate {
-    var segmentControl : UISegmentedControl!
-    var dragImageView : UIImageView!
-    var selectedImageView : UIImageView!
-    var dropPoint : CGPoint?
+    private var segmentControl : UISegmentedControl!
+    private var dragImageView : UIImageView!
+    private var selectedImageView : UIImageView!
+    private var dropPoint : CGPoint?
     
     override func viewDidLoad() {
         title = "Drag to move"
@@ -68,7 +68,7 @@ class DragToMoveViewController: UIViewController,UIDragInteractionDelegate,UIDro
         dropPoint = session.location(in: view)
         return proposal
     }
-    
+//
     func dropInteraction(_ interaction: UIDropInteraction, item: UIDragItem, willAnimateDropWith animator: UIDragAnimating) {
         if segmentControl.selectedSegmentIndex == 0 {
             //Move
@@ -78,21 +78,25 @@ class DragToMoveViewController: UIViewController,UIDragInteractionDelegate,UIDro
             animator.addCompletion { _ in
                 self.selectedImageView.center = self.dropPoint!
             }
-        } else {
-            createImageFromProviderAndPoint(provider: item.itemProvider, point: self.dropPoint!)
         }
+//        else {
+//            createImageFromProviderAndPoint(provider: item.itemProvider, point: self.dropPoint!)
+//        }
     }
-    
+
     func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
+        self.dropPoint = session.location(in: interaction.view!)
         //Must implement this method
         if session.localDragSession == nil {
             self.dropPoint = session.location(in: interaction.view!)
                 for dragItem in session.items {
                     createImageFromProviderAndPoint(provider: dragItem.itemProvider, point: self.dropPoint!)
                 }
-            }
+        } else {
+            self.selectedImageView.center = self.dropPoint!
+        }
     }
-    
+
     // MARK: - Helper
     private func createImageCopyAtPoint(point:CGPoint) {
         let newImageView = UIImageView.init(frame: CGRect.init(x: 0, y: 0, width: kImageSizeWidth, height: kImageSizeHeight))

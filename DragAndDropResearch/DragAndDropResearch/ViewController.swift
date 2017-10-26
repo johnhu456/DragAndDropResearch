@@ -8,11 +8,11 @@
 
 import UIKit
 
-let kCellReuseIdentifer = "kCellReuseIdentifer"
-
 class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
-    var tableView : UITableView!
-    let options = ["Drag to paste","Drag to move","Drag to copy"]
+    private let kCellReuseIdentifer = "kCellReuseIdentifer"
+    
+    private var tableView : UITableView!
+    private let options = ["Drag to paste","Drag to move & copy","Drag to transport"]
 
     override func viewDidLoad() {
         title = "Drag and Drop"
@@ -51,6 +51,8 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
           navigationController?.pushViewController(DragToPasteViewController.init(), animated: true)
         case 1:
           navigationController?.pushViewController(DragToMoveViewController.init(), animated: true)
+        case 2:
+          navigationController?.pushViewController(DragToTransportViewController.init(), animated: true)
         default:
             return
         }

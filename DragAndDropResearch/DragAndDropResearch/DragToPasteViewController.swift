@@ -9,8 +9,8 @@
 import UIKit
 
 class PasteImageView : UIImageView {
-    let tipLayer : CATextLayer
-    let customBorderLayer : CAShapeLayer
+    private let tipLayer : CATextLayer
+    private let customBorderLayer : CAShapeLayer
     
     override init(frame: CGRect) {
         tipLayer = CATextLayer.init()
