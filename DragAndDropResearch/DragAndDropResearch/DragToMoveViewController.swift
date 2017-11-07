@@ -68,7 +68,7 @@ class DragToMoveViewController: UIViewController,UIDragInteractionDelegate,UIDro
         dropPoint = session.location(in: view)
         return proposal
     }
-//
+
     func dropInteraction(_ interaction: UIDropInteraction, item: UIDragItem, willAnimateDropWith animator: UIDragAnimating) {
         if segmentControl.selectedSegmentIndex == 0 {
             //Move
@@ -79,9 +79,6 @@ class DragToMoveViewController: UIViewController,UIDragInteractionDelegate,UIDro
                 self.selectedImageView.center = self.dropPoint!
             }
         }
-//        else {
-//            createImageFromProviderAndPoint(provider: item.itemProvider, point: self.dropPoint!)
-//        }
     }
 
     func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
@@ -126,16 +123,4 @@ class DragToMoveViewController: UIViewController,UIDragInteractionDelegate,UIDro
             }
         })
     }
-
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
