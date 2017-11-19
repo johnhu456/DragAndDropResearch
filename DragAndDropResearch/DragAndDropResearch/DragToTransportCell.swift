@@ -10,7 +10,11 @@ import UIKit
 import AVKit
 
 class DragToTransportCell: UITableViewCell {
-    var videoPlayer: AVPlayer?
+    var videoPlayer: AVPlayer?{
+        didSet{
+            self.reloadInterface()
+        }
+    }
     var videoPlayerLayer : AVPlayerLayer?
     var videoPlayView : UIView?
     
@@ -20,9 +24,8 @@ class DragToTransportCell: UITableViewCell {
     
     convenience init(videoPlayer:AVPlayer!, reuseIdentifier:String?) {
         self.init(style: .value1, reuseIdentifier: reuseIdentifier)
-        self.videoPlayer = videoPlayer
-        setupInterface()
         setupGesture()
+        self.videoPlayer = videoPlayer
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -33,9 +36,15 @@ class DragToTransportCell: UITableViewCell {
         videoPlayerLayer = AVPlayerLayer.init(player: videoPlayer)
         let frame = CGRect.init(x: 0, y: 0, width: contentView.frame.size.width/2, height: contentView.frame.size.height)
         videoPlayerLayer?.frame = frame
-        let videoPlayView = UIView.init(frame: frame)
-        videoPlayView.layer .addSublayer(videoPlayerLayer!)
-        contentView.addSubview(videoPlayView)
+        videoPlayView = UIView.init(frame: frame)
+        videoPlayView!.layer .addSublayer(videoPlayerLayer!)
+        contentView.addSubview(videoPlayView!)
+    }
+    
+    private func reloadInterface() {
+        videoPlayerLayer?.removeFromSuperlayer()
+        videoPlayView?.removeFromSuperview()
+        setupInterface()
     }
     
     private func setupGesture() {
